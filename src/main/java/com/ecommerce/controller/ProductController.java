@@ -1,0 +1,12 @@
+package com.ecommerce.controller;
+import com.ecommerce.dto.request.ProductRequest;import com.ecommerce.dto.response.*;import com.ecommerce.service.ProductService;import jakarta.validation.Valid;import lombok.RequiredArgsConstructor;import org.springframework.data.domain.*;import org.springframework.http.*;import org.springframework.security.access.prepost.PreAuthorize;import org.springframework.web.bind.annotation.*;
+@RestController @RequestMapping("/api/products") @RequiredArgsConstructor
+public class ProductController {
+    private final ProductService productService;
+    @GetMapping public ResponseEntity<ApiResponse<Page<ProductResponse>>> getAll(@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="12")int size,@RequestParam(defaultValue="createdAt")String sortBy,@RequestParam(defaultValue="desc")String direction){Sort sort=direction.equalsIgnoreCase("asc")?Sort.by(sortBy).ascending():Sort.by(sortBy).descending();return ResponseEntity.ok(ApiResponse.success("Products fetched",productService.getAllProducts(PageRequest.of(page,size,sort))));}
+    @GetMapping("/{id}") public ResponseEntity<ApiResponse<ProductResponse>> getById(@PathVariable Long id){return ResponseEntity.ok(ApiResponse.success("Product fetched",productService.getProductById(id)));}
+    @GetMapping("/category/{categoryId}") public ResponseEntity<ApiResponse<Page<ProductResponse>>> getByCategory(@PathVariable Long categoryId,@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="12")int size){return ResponseEntity.ok(ApiResponse.success("Products fetched",productService.getProductsByCategory(categoryId,PageRequest.of(page,size))));}
+    @PostMapping @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<ApiResponse<ProductResponse>> create(@Valid @RequestBody ProductRequest req){return ResponseEntity.status(201).body(ApiResponse.success("Product created",productService.createProduct(req)));}
+    @PutMapping("/{id}") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<ApiResponse<ProductResponse>> update(@PathVariable Long id,@Valid @RequestBody ProductRequest req){return ResponseEntity.ok(ApiResponse.success("Product updated",productService.updateProduct(id,req)));}
+    @DeleteMapping("/{id}") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id){productService.deleteProduct(id);return ResponseEntity.ok(ApiResponse.success("Product deleted"));}
+}

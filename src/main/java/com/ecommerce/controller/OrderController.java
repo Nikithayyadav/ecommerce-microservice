@@ -1,0 +1,12 @@
+package com.ecommerce.controller;
+import com.ecommerce.dto.request.OrderRequest;import com.ecommerce.dto.response.*;import com.ecommerce.service.OrderService;import jakarta.validation.Valid;import lombok.RequiredArgsConstructor;import org.springframework.data.domain.*;import org.springframework.http.*;import org.springframework.security.access.prepost.PreAuthorize;import org.springframework.security.core.annotation.AuthenticationPrincipal;import org.springframework.security.core.userdetails.UserDetails;import org.springframework.web.bind.annotation.*;
+@RestController @RequestMapping("/api/orders") @RequiredArgsConstructor
+public class OrderController {
+    private final OrderService orderService;
+    @PostMapping public ResponseEntity<ApiResponse<OrderResponse>> place(@AuthenticationPrincipal UserDetails u,@Valid @RequestBody OrderRequest req){return ResponseEntity.status(201).body(ApiResponse.success("Order placed",orderService.placeOrder(u.getUsername(),req)));}
+    @GetMapping public ResponseEntity<ApiResponse<Page<OrderResponse>>> getUserOrders(@AuthenticationPrincipal UserDetails u,@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="10")int size){return ResponseEntity.ok(ApiResponse.success("Orders fetched",orderService.getUserOrders(u.getUsername(),PageRequest.of(page,size))));}
+    @GetMapping("/{id}") public ResponseEntity<ApiResponse<OrderResponse>> getById(@AuthenticationPrincipal UserDetails u,@PathVariable Long id){return ResponseEntity.ok(ApiResponse.success("Order fetched",orderService.getOrderById(u.getUsername(),id)));}
+    @PutMapping("/{id}/cancel") public ResponseEntity<ApiResponse<OrderResponse>> cancel(@AuthenticationPrincipal UserDetails u,@PathVariable Long id){return ResponseEntity.ok(ApiResponse.success("Order cancelled",orderService.cancelOrder(u.getUsername(),id)));}
+    @GetMapping("/admin/all") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<ApiResponse<Page<OrderResponse>>> getAllOrders(@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="20")int size){return ResponseEntity.ok(ApiResponse.success("All orders",orderService.getAllOrders(PageRequest.of(page,size))));}
+    @PutMapping("/admin/{id}/status") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<ApiResponse<OrderResponse>> updateStatus(@PathVariable Long id,@RequestParam String status){return ResponseEntity.ok(ApiResponse.success("Status updated",orderService.updateOrderStatus(id,status)));}
+}

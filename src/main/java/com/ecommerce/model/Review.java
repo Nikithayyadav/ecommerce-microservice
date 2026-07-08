@@ -1,0 +1,4 @@
+package com.ecommerce.model;
+import jakarta.persistence.*;import lombok.*;import org.springframework.data.annotation.CreatedDate;import org.springframework.data.jpa.domain.support.AuditingEntityListener;import java.time.LocalDateTime;
+@Entity @Table(name="reviews",uniqueConstraints=@UniqueConstraint(columnNames={"user_id","product_id"})) @Data @Builder @NoArgsConstructor @AllArgsConstructor @EntityListeners(AuditingEntityListener.class)
+public class Review { @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id; @Column(name="user_id",nullable=false) private Long userId; @Column(name="user_name") private String userName; @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="product_id",nullable=false) @ToString.Exclude @EqualsAndHashCode.Exclude private Product product; @Column(nullable=false) private Integer rating; @Column(columnDefinition="TEXT") private String comment; @CreatedDate @Column(updatable=false) private LocalDateTime createdAt; }
